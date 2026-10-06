@@ -55,6 +55,10 @@ import com.my.kizzy.feature_startup.StartUp
 import com.my.kizzy.navigation.Routes
 import com.my.kizzy.navigation.animatedComposable
 import com.my.kizzy.preference.Prefs
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.my.kizzy.feature_console_rpc.pc.PcGamesScreen
+import com.my.kizzy.feature_console_rpc.pc.PcGamesViewModel
+import com.my.kizzy.ui.components.InstagramSliderNavBar
 import xyz.dead8309.feature_experimental_rpc.ExperimentalRpcScreen
 import xyz.dead8309.feature_experimental_rpc.ExperimentalRpcViewmodel
 import xyz.dead8309.feature_experimental_rpc.apps.ExperimentalRpcAppsScreen
@@ -66,9 +70,46 @@ internal fun ComponentActivity.Kizzy(
     usageAccessStatus: MutableState<Boolean>,
     notificationListenerAccess: MutableState<Boolean>,
 ) {
-    Scaffold()
-    {
-        val navController = rememberAnimatedNavController()
+    val navController = rememberAnimatedNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val selectedTab = when (currentRoute) {
+        Routes.HOME -> 0
+        Routes.PC_GAMES_RPC -> 1
+        Routes.CONSOLE_RPC -> 2
+        Routes.APPS_DETECTION, Routes.MEDIA_RPC, Routes.EXPERIMENTAL_RPC -> 3
+        Routes.PROFILE -> 4
+        else -> -1
+    }
+
+    Scaffold(
+        bottomBar = {
+            if (selectedTab >= 0) {
+                InstagramSliderNavBar(
+                    selectedIndex = selectedTab,
+                    onItemSelected = { index ->
+                        val target = when (index) {
+                            0 -> Routes.HOME
+                            1 -> Routes.PC_GAMES_RPC
+                            2 -> Routes.CONSOLE_RPC
+                            3 -> Routes.APPS_DETECTION
+                            4 -> Routes.PROFILE
+                            else -> Routes.HOME
+                        }
+                        if (currentRoute != target) {
+                            navController.navigate(target) {
+                                popUpTo(Routes.HOME) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    }
+                )
+            }
+        }
+    ) {
         AnimatedNavHost(
             navController = navController,
             startDestination = if (Prefs[Prefs.IS_FIRST_LAUNCHED, true]) Routes.SETUP else Routes.HOME
@@ -186,6 +227,16 @@ internal fun ComponentActivity.Kizzy(
             animatedComposable(Routes.CONSOLE_RPC) {
                 val viewModel by viewModels<GamesViewModel>()
                 GamesScreen(
+                    onBackPressed = { navController.popBackStack() },
+                    onEvent = { viewModel.onUiEvent(it) },
+                    isSearchBarVisible = viewModel.isSearchBarVisible.value,
+                    state = viewModel.state.value,
+                    serviceEnabled = AppUtils.customRpcRunning()
+                )
+            }
+            animatedComposable(Routes.PC_GAMES_RPC) {
+                val viewModel by viewModels<PcGamesViewModel>()
+                PcGamesScreen(
                     onBackPressed = { navController.popBackStack() },
                     onEvent = { viewModel.onUiEvent(it) },
                     isSearchBarVisible = viewModel.isSearchBarVisible.value,

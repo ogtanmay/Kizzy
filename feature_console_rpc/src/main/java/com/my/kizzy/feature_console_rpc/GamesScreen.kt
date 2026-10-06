@@ -18,14 +18,18 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -248,29 +252,32 @@ fun SingleChoiceGameItem(
     selected: Boolean,
     onClick: (game: Game) -> Unit,
 ) {
-    ElevatedCard(
+    com.my.kizzy.ui.components.LiquidGlassCard(
         onClick = { onClick(game) },
+        shape = RoundedCornerShape(24.dp),
+        glowColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
-            .clip(RoundedCornerShape(25.dp))
+            .padding(horizontal = 8.dp, vertical = 5.dp)
     ) {
         Row(
             modifier = Modifier
-                .padding(8.dp)
+                .padding(10.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(15.dp))
+                    .size(72.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
             ) {
                 AsyncImage(
                     model = game.large_image,
                     modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(15.dp)),
+                        .size(72.dp)
+                        .clip(RoundedCornerShape(16.dp)),
                     contentDescription = game.game_title,
                 )
                 androidx.compose.animation.AnimatedVisibility(
@@ -278,15 +285,15 @@ fun SingleChoiceGameItem(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary),
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(4.dp),
                     enter = fadeIn() + expandIn(expandFrom = Alignment.Center),
                     exit = shrinkOut(shrinkTowards = Alignment.Center) + fadeOut()
                 ) {
                     Icon(
                         Icons.Outlined.Check,
-                        null,
-                        modifier = Modifier
-                            .size(40.dp),
+                        contentDescription = "Selected",
+                        modifier = Modifier.size(28.dp),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -294,23 +301,48 @@ fun SingleChoiceGameItem(
 
             Column(
                 modifier = Modifier
-                    .weight(9f)
-                    .padding(5.dp)
+                    .weight(1f)
+                    .padding(horizontal = 12.dp)
             ) {
                 Text(
                     text = game.game_title,
                     maxLines = 1,
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
-                    color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 18.sp,
+                        fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.SemiBold
+                    ),
+                    color = if (selected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurface,
                     overflow = TextOverflow.Ellipsis
                 )
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(
+                            if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = game.platform,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             AsyncImage(
                 model = game.small_image,
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape),
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .border(
+                        1.dp,
+                        Color.White.copy(alpha = 0.3f),
+                        CircleShape
+                    ),
                 contentDescription = game.platform
             )
         }

@@ -36,34 +36,42 @@ fun SwitchBar(
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {
-    val colorScheme = getColorScheme(darkTheme = false)
-    Row(
+    val glowColor = if (isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-            .clip(RoundedCornerShape(25.dp))
-            .background(colorScheme.primaryContainer)
-            .toggleable(enabled){
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .liquidGlass(
+                shape = RoundedCornerShape(26.dp),
+                glowColor = glowColor,
+                borderAlpha = if (isChecked) 0.5f else 0.3f,
+                surfaceAlpha = if (isChecked) 0.25f else 0.12f
+            )
+            .toggleable(enabled) {
                 onClick()
             }
-            .padding(20.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
+            .padding(horizontal = 20.dp, vertical = 18.dp)
     ) {
-        with(MaterialTheme) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text(
-                modifier = Modifier.weight(4f),
+                modifier = Modifier.weight(1f),
                 text = title,
                 maxLines = 1,
-                style = typography.titleLarge.copy(fontSize = 20.sp),
-                color = colorScheme.onSurface,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = 18.sp,
+                    fontWeight = if (isChecked) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.SemiBold
+                ),
+                color = if (isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                 overflow = TextOverflow.Ellipsis
             )
             KSwitch(
-                modifier = Modifier.weight(1f),
                 checked = isChecked,
                 enable = enabled
-            ){
+            ) {
                 if (enabled) onClick()
             }
         }

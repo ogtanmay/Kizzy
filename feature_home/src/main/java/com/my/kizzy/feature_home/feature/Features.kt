@@ -13,6 +13,7 @@
 package com.my.kizzy.feature_home.feature
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -108,13 +109,23 @@ fun Features(
                                 Brush.linearGradient(
                                     listOf(
                                         MaterialTheme.colorScheme.primaryContainer,
-                                        MaterialTheme.colorScheme.primaryContainer.copy(0.8f),
-                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                                        MaterialTheme.colorScheme.primaryContainer.copy(0.85f),
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
                                     )
                                 )
                             } else {
                                 brush
                             }
+                        )
+                        .border(
+                            1.dp,
+                            Brush.linearGradient(
+                                listOf(
+                                    androidx.compose.ui.graphics.Color.White.copy(alpha = 0.45f),
+                                    if (homeItems[i].isChecked) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else androidx.compose.ui.graphics.Color.White.copy(alpha = 0.08f)
+                                )
+                            ),
+                            homeItems[i].shape
                         )
                         .clickable { homeItems[i].route?.let { homeItems[i].onClick(it) } }) {
                         Column(
@@ -168,7 +179,7 @@ fun Features(
                 }
             }
             else {
-                Box(modifier = Modifier
+                    Box(modifier = Modifier
                     .size(featureSize)
                     .padding(9.dp)
                     .aspectRatio(1f)
@@ -178,13 +189,23 @@ fun Features(
                             Brush.linearGradient(
                                 listOf(
                                     MaterialTheme.colorScheme.primaryContainer,
-                                    MaterialTheme.colorScheme.primaryContainer.copy(0.8f),
-                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                                    MaterialTheme.colorScheme.primaryContainer.copy(0.85f),
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
                                 )
                             )
                         } else {
                             brush
                         }
+                    )
+                    .border(
+                        1.dp,
+                        Brush.linearGradient(
+                            listOf(
+                                androidx.compose.ui.graphics.Color.White.copy(alpha = 0.45f),
+                                if (homeItems[i].isChecked) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else androidx.compose.ui.graphics.Color.White.copy(alpha = 0.08f)
+                            )
+                        ),
+                        homeItems[i].shape
                     )
                     .clickable { homeItems[i].route?.let { homeItems[i].onClick(it) } }) {
                     Column(

@@ -153,10 +153,31 @@ fun homeFeaturesProvider(
             featureDocsLink = ToolTipContent.EXPERIMENTAL_RPC_DOCS_LINK
         ),
         HomeFeature(
-            title = stringResource(id = R.string.main_comingSoon),
-            icon = R.drawable.ic_info,
-            shape = RoundedCornerShape(20.dp, 44.dp, 20.dp, 44.dp),
-            showSwitch = false
+            title = stringResource(id = R.string.main_pcGamesRpc),
+            icon = R.drawable.ic_pc_games,
+            route = Routes.PC_GAMES_RPC,
+            isChecked = AppUtils.customRpcRunning(),
+            onClick = {
+                navigateTo(it)
+            },
+            onCheckedChange = {
+                if (it) {
+                    val lastRpc = Prefs[Prefs.LAST_RUN_PC_GAMES_RPC, ""]
+                    val intent = Intent(ctx, CustomRpcService::class.java)
+                    intent.apply {
+                        putExtra("RPC", lastRpc)
+                    }
+                    ctx.stopService(Intent(ctx, MediaRpcService::class.java))
+                    ctx.stopService(Intent(ctx, ExperimentalRpc::class.java))
+                    ctx.stopService(Intent(ctx, AppDetectionService::class.java))
+                    ctx.startService(intent)
+                } else
+                    ctx.stopService(Intent(ctx, CustomRpcService::class.java))
+            },
+            shape = RoundedCornerShape(44.dp, 20.dp, 44.dp, 20.dp),
+            showSwitch = Prefs[Prefs.LAST_RUN_PC_GAMES_RPC, ""].isNotEmpty(),
+            tooltipText = stringResource(id = R.string.main_pcGamesRpc_details),
+            featureDocsLink = ToolTipContent.CONSOLE_RPC_DOCS_LINK
         )
     )
 }

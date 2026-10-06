@@ -18,7 +18,18 @@ android {
             useSupportLibrary = true
         }
     }
+    signingConfigs {
+        create("debugConfig") {
+            storeFile = file("${rootDir}/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debugConfig")
+        }
         release {
             isShrinkResources = true
             isMinifyEnabled = true
@@ -55,6 +66,7 @@ dependencies {
     implementation (projects.featureHome)
     implementation (projects.common.preference)
     implementation (projects.common.navigation)
+    implementation (projects.common.components)
 
     // Extras
     implementation (libs.app.compat)
