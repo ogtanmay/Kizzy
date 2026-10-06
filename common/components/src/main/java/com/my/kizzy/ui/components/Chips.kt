@@ -19,9 +19,9 @@ data class Chips(
     val url: String
 )
 
-val chips =  listOf(
-    Chips("Discord", "https://discord.gg/vUPc7zzpV5"),
-    Chips("Youtube", "https://youtube.com/channel/UCh-zsCv66gwHCIbMKLMJmaw")
+val chips = listOf(
+    Chips("GitHub", "https://github.com/ogtanmay/Kizzy.git"),
+    Chips("Instagram", "https://instagram.com/tanmahy")
 )
 @Composable
 fun ChipSection() {

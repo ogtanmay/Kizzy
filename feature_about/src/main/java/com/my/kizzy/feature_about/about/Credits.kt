@@ -222,8 +222,8 @@ fun CreditsPreview3() {
             listOf(
                 Contributor(
                     avatar = "",
-                    name = "dead8309",
-                    url = "https://github.com/dead8309"
+                    name = "Tanmay",
+                    url = "https://github.com/ogtanmay"
                 )
             )
         ),
