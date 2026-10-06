@@ -3,7 +3,7 @@
  *  ******************************************************************
  *  *  * Copyright (C) 2026
  *  *  * LiquidGlass.kt is part of Kizzy
- *  *  * iOS 27 Liquid Glassmorphism & Instagram Slider Nav Bar
+ *  *  * Authentic iOS 27 Liquid Glassmorphism & Interactive Draggable Slider Nav Bar
  *  *  *****************************************************************
  *
  *
@@ -11,13 +11,15 @@
 
 package com.my.kizzy.ui.components
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,83 +52,76 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SportsEsports
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /**
- * Liquid Glass styling modifier providing iOS 27 glassmorphism:
- * Frosted translucent surfaces, prismatic specular borders, ambient illumination.
+ * Clean iOS 27 Liquid Glass modifier:
+ * Elegant frosted physical glass look without harsh dark gradients or neon cyberpunk cliches.
+ * Features subtle rim lighting, soft diffuse shadow, and pristine translucent optical depth.
  */
 @Composable
 fun Modifier.liquidGlass(
-    shape: Shape = RoundedCornerShape(26.dp),
+    shape: Shape = RoundedCornerShape(28.dp),
     glowColor: Color = MaterialTheme.colorScheme.primary,
-    borderAlpha: Float = 0.35f,
-    surfaceAlpha: Float = 0.12f,
+    borderAlpha: Float = 0.30f,
+    surfaceAlpha: Float = 0.70f,
 ): Modifier {
     val isDark = MaterialTheme.colorScheme.surface.let {
-        // Simple luminance heuristic: if surface is dark
         it.red * 0.299f + it.green * 0.587f + it.blue * 0.114f < 0.5f
     }
 
     val glassBackground = if (isDark) {
-        Brush.linearGradient(
-            colors = listOf(
-                Color(0xFF2A2E3D).copy(alpha = 0.65f),
-                Color(0xFF1E212E).copy(alpha = 0.82f),
-                glowColor.copy(alpha = 0.15f)
-            ),
-            start = Offset(0f, 0f),
-            end = Offset(400f, 800f)
-        )
+        Color(0xFF1E2129).copy(alpha = 0.82f)
     } else {
-        Brush.linearGradient(
-            colors = listOf(
-                Color.White.copy(alpha = 0.85f),
-                Color.White.copy(alpha = 0.55f),
-                glowColor.copy(alpha = 0.12f)
-            ),
-            start = Offset(0f, 0f),
-            end = Offset(400f, 800f)
-        )
+        Color(0xFFFFFFFF).copy(alpha = 0.88f)
     }
 
     val specularBorder = Brush.linearGradient(
         colors = listOf(
-            Color.White.copy(alpha = if (isDark) borderAlpha else borderAlpha + 0.25f),
-            glowColor.copy(alpha = borderAlpha * 0.8f),
-            Color.White.copy(alpha = 0.05f),
-            glowColor.copy(alpha = borderAlpha * 0.5f)
+            if (isDark) Color.White.copy(alpha = 0.18f) else Color.White.copy(alpha = 0.90f),
+            if (isDark) Color.White.copy(alpha = 0.06f) else Color.White.copy(alpha = 0.40f),
+            if (isDark) Color(0xFF333842).copy(alpha = 0.40f) else Color(0xFFE2E8F0).copy(alpha = 0.70f)
         ),
         start = Offset(0f, 0f),
-        end = Offset(300f, 600f)
+        end = Offset(400f, 800f)
     )
 
     return this
         .shadow(
-            elevation = 12.dp,
+            elevation = 10.dp,
             shape = shape,
-            ambientColor = glowColor.copy(alpha = 0.35f),
-            spotColor = glowColor.copy(alpha = 0.45f)
+            ambientColor = if (isDark) Color.Black.copy(alpha = 0.40f) else Color(0xFF64748B).copy(alpha = 0.15f),
+            spotColor = if (isDark) Color.Black.copy(alpha = 0.50f) else Color(0xFF475569).copy(alpha = 0.20f)
         )
         .clip(shape)
         .background(glassBackground)
@@ -134,12 +129,12 @@ fun Modifier.liquidGlass(
 }
 
 /**
- * Liquid Glass Card with specular highlight reflection.
+ * Liquid Glass Card with clean Apple-style glass aesthetic.
  */
 @Composable
 fun LiquidGlassCard(
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(26.dp),
+    shape: Shape = RoundedCornerShape(24.dp),
     glowColor: Color = MaterialTheme.colorScheme.primary,
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
@@ -162,7 +157,7 @@ fun LiquidGlassCard(
 }
 
 /**
- * Instagram-style navigation item definition.
+ * Navigation item definition.
  */
 data class NavSliderItem(
     val title: String,
@@ -172,8 +167,10 @@ data class NavSliderItem(
 )
 
 /**
- * iOS 27 Liquid Glass Slider Nav Bar with an animated fluid glass sliding pill indicator,
- * chromatic specular highlights, and floating translucent dock.
+ * iOS 27 Liquid Glass Draggable Slider Nav Bar:
+ * Users can either tap ANY tab or directly DRAG / SLIDE the liquid glass capsule pill across the dock.
+ * Wherever the user releases their finger, the indicator snaps cleanly with fluid physics spring
+ * animation to that target tab, and automatically opens that destination tab ("jispe jake ruke wo tab open").
  */
 @Composable
 fun IosLiquidGlassSliderNavBar(
@@ -185,140 +182,230 @@ fun IosLiquidGlassSliderNavBar(
     val isDark = MaterialTheme.colorScheme.surface.let {
         it.red * 0.299f + it.green * 0.587f + it.blue * 0.114f < 0.5f
     }
+    val density = LocalDensity.current
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 14.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
         // Floating iOS 27 Liquid Glass Dock Container
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(70.dp)
+                .height(68.dp)
                 .liquidGlass(
-                    shape = RoundedCornerShape(35.dp),
-                    glowColor = MaterialTheme.colorScheme.primary,
-                    borderAlpha = if (isDark) 0.45f else 0.65f,
-                    surfaceAlpha = if (isDark) 0.22f else 0.35f
+                    shape = RoundedCornerShape(34.dp),
+                    glowColor = MaterialTheme.colorScheme.primary
                 )
                 .drawBehind {
-                    // Top specular rim light reflection (iOS 27 glass refraction)
+                    // Top rim specular reflection (refined, soft glass finish)
                     drawRoundRect(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                Color.White.copy(alpha = if (isDark) 0.40f else 0.70f),
-                                Color.White.copy(alpha = 0.05f),
+                                (if (isDark) Color.White.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.70f)),
                                 Color.Transparent
                             ),
                             startY = 0f,
-                            endY = size.height * 0.45f
+                            endY = size.height * 0.5f
                         ),
-                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(35.dp.toPx(), 35.dp.toPx())
+                        cornerRadius = CornerRadius(34.dp.toPx(), 34.dp.toPx())
                     )
                 }
                 .padding(horizontal = 6.dp, vertical = 6.dp)
         ) {
-            val totalWidth = maxWidth
+            val totalWidthPx = constraints.maxWidth.toFloat()
             val itemCount = items.size.coerceAtLeast(1)
-            val tabWidth = totalWidth / itemCount
+            val tabWidthPx = totalWidthPx / itemCount
+            val tabWidthDp = maxWidth / itemCount
 
-            // Ultra-smooth spring-based liquid sliding pill indicator
-            val indicatorOffset by animateDpAsState(
-                targetValue = tabWidth * selectedIndex,
-                animationSpec = spring(
-                    dampingRatio = 0.72f,
-                    stiffness = Spring.StiffnessMediumLow
-                ),
-                label = "ios27_slider_offset"
-            )
+            // Animatable offset in pixels for zero-latency dragging and organic spring snap
+            val pillOffsetAnim = remember { Animatable(selectedIndex * tabWidthPx) }
+            var isDragging by remember { mutableStateOf(false) }
 
-            // The Liquid Glass Sliding Capsule Pill
+            // Sync with external selectedIndex updates when not user-dragging
+            LaunchedEffect(selectedIndex, tabWidthPx) {
+                if (!isDragging && tabWidthPx > 0f) {
+                    val targetPx = selectedIndex * tabWidthPx
+                    if (pillOffsetAnim.value != targetPx) {
+                        pillOffsetAnim.animateTo(
+                            targetValue = targetPx,
+                            animationSpec = spring(
+                                dampingRatio = 0.75f,
+                                stiffness = Spring.StiffnessMediumLow
+                            )
+                        )
+                    }
+                }
+            }
+
+            // Real-time hover index calculated while dragging or snapping
+            val activeHoverIndex = remember(pillOffsetAnim.value, tabWidthPx) {
+                if (tabWidthPx <= 0f) selectedIndex
+                else {
+                    val center = pillOffsetAnim.value + (tabWidthPx / 2f)
+                    (center / tabWidthPx).toInt().coerceIn(0, itemCount - 1)
+                }
+            }
+
+            // Gesture Detector: Unified Tap + Drag across the entire Dock
+            val gestureModifier = Modifier.pointerInput(tabWidthPx, itemCount) {
+                detectDragGestures(
+                    onDragStart = {
+                        isDragging = true
+                    },
+                    onDragEnd = {
+                        isDragging = false
+                        // "jispe jake ruke wo wala tab open": snap to the tab nearest to where released
+                        val releaseIndex = (pillOffsetAnim.value / tabWidthPx)
+                            .roundToInt()
+                            .coerceIn(0, itemCount - 1)
+                        scope.launch {
+                            pillOffsetAnim.animateTo(
+                                targetValue = releaseIndex * tabWidthPx,
+                                animationSpec = spring(
+                                    dampingRatio = 0.72f,
+                                    stiffness = Spring.StiffnessMedium
+                                )
+                            )
+                        }
+                        onItemSelected(releaseIndex)
+                    },
+                    onDragCancel = {
+                        isDragging = false
+                        val snapBackIndex = selectedIndex.coerceIn(0, itemCount - 1)
+                        scope.launch {
+                            pillOffsetAnim.animateTo(
+                                targetValue = snapBackIndex * tabWidthPx,
+                                animationSpec = spring(
+                                    dampingRatio = 0.75f,
+                                    stiffness = Spring.StiffnessMediumLow
+                                )
+                            )
+                        }
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        val newOffset = (pillOffsetAnim.value + dragAmount.x)
+                            .coerceIn(0f, (itemCount - 1) * tabWidthPx)
+                        scope.launch {
+                            pillOffsetAnim.snapTo(newOffset)
+                        }
+                    }
+                )
+            }
+
+            // Outer Gestures Box covering entire Dock
             Box(
                 modifier = Modifier
-                    .offset(x = indicatorOffset)
-                    .width(tabWidth)
-                    .height(58.dp)
-                    .padding(horizontal = 3.dp, vertical = 2.dp)
-                    .clip(RoundedCornerShape(29.dp))
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.90f),
-                                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.78f),
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
-                            ),
-                            start = Offset(0f, 0f),
-                            end = Offset(200f, 200f)
-                        )
-                    )
-                    .border(
-                        1.2.dp,
-                        Brush.verticalGradient(
-                            listOf(
-                                Color.White.copy(alpha = 0.80f),
-                                Color.White.copy(alpha = 0.15f)
-                            )
-                        ),
-                        RoundedCornerShape(29.dp)
-                    )
-            )
-
-            // Navigation Items Row
-            Row(
-                modifier = Modifier
                     .fillMaxWidth()
-                    .height(58.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
+                    .height(56.dp)
+                    .then(gestureModifier)
             ) {
-                items.forEachIndexed { index, item ->
-                    val isSelected = selectedIndex == index
-                    val iconScale by animateFloatAsState(
-                        targetValue = if (isSelected) 1.18f else 1.0f,
-                        animationSpec = spring(
-                            dampingRatio = 0.65f,
-                            stiffness = Spring.StiffnessMediumLow
-                        ),
-                        label = "ios27_icon_scale"
-                    )
+                // The Liquid Glass Sliding Capsule Pill
+                val pillDragScale by animateFloatAsState(
+                    targetValue = if (isDragging) 1.04f else 1.0f,
+                    animationSpec = spring(dampingRatio = 0.65f),
+                    label = "pill_drag_scale"
+                )
 
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(58.dp)
-                            .testTag(item.testTag)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-                                onItemSelected(index)
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+                // Clean iOS Pill: Clean solid primary tint with translucent frosted glow (non-techy)
+                val pillBackground = if (isDark) {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.92f)
+                } else {
+                    MaterialTheme.colorScheme.primary
+                }
+
+                Box(
+                    modifier = Modifier
+                        .offset { IntOffset(pillOffsetAnim.value.roundToInt(), 0) }
+                        .width(tabWidthDp)
+                        .height(56.dp)
+                        .scale(pillDragScale)
+                        .padding(horizontal = 3.dp, vertical = 2.dp)
+                        .shadow(
+                            elevation = if (isDragging) 10.dp else 4.dp,
+                            shape = RoundedCornerShape(26.dp),
+                            ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                            spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)
+                        )
+                        .clip(RoundedCornerShape(26.dp))
+                        .background(pillBackground)
+                        .border(
+                            1.dp,
+                            Color.White.copy(alpha = if (isDark) 0.35f else 0.45f),
+                            RoundedCornerShape(26.dp)
+                        )
+                )
+
+                // Navigation Items Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    items.forEachIndexed { index, item ->
+                        val isHighlighted = if (isDragging) activeHoverIndex == index else selectedIndex == index
+                        val iconScale by animateFloatAsState(
+                            targetValue = if (isHighlighted) 1.15f else 1.0f,
+                            animationSpec = spring(
+                                dampingRatio = 0.65f,
+                                stiffness = Spring.StiffnessMediumLow
+                            ),
+                            label = "ios27_icon_scale"
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp)
+                                .testTag(item.testTag)
+                                .pointerInput(index) {
+                                    detectTapGestures {
+                                        // Tap navigation: animate pill and switch tab
+                                        scope.launch {
+                                            pillOffsetAnim.animateTo(
+                                                targetValue = index * tabWidthPx,
+                                                animationSpec = spring(
+                                                    dampingRatio = 0.72f,
+                                                    stiffness = Spring.StiffnessMedium
+                                                )
+                                            )
+                                        }
+                                        onItemSelected(index)
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                                contentDescription = item.title,
-                                tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .scale(iconScale)
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = item.title,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontSize = 10.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                                ),
-                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = if (isHighlighted) item.selectedIcon else item.unselectedIcon,
+                                    contentDescription = item.title,
+                                    tint = if (isHighlighted) Color.White
+                                           else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                                    modifier = Modifier
+                                        .size(23.dp)
+                                        .scale(iconScale)
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = item.title,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 10.sp,
+                                        fontWeight = if (isHighlighted) FontWeight.Bold else FontWeight.Medium
+                                    ),
+                                    color = if (isHighlighted) Color.White
+                                           else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+                                )
+                            }
                         }
                     }
                 }
@@ -346,7 +433,7 @@ fun InstagramSliderNavBar(
 }
 
 /**
- * Default Instagram-style navigation items:
+ * Default navigation items:
  * Home, PC Games, Console, Apps & Media, Profile.
  */
 fun defaultNavItems(): List<NavSliderItem> = listOf(
@@ -358,7 +445,7 @@ fun defaultNavItems(): List<NavSliderItem> = listOf(
 )
 
 /**
- * Liquid Glass Category Slider for platform filtering (like Instagram Stories/Categories).
+ * Clean Liquid Glass Category Slider for platform filtering (non-techy, natural frosted look).
  */
 @Composable
 fun LiquidGlassCategorySlider(
@@ -367,6 +454,10 @@ fun LiquidGlassCategorySlider(
     onCategorySelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.let {
+        it.red * 0.299f + it.green * 0.587f + it.blue * 0.114f < 0.5f
+    }
+
     LazyRow(
         modifier = modifier
             .fillMaxWidth()
@@ -389,27 +480,16 @@ fun LiquidGlassCategorySlider(
                     .then(
                         if (isSelected) {
                             Modifier
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(
-                                            MaterialTheme.colorScheme.primary,
-                                            MaterialTheme.colorScheme.tertiary
-                                        )
-                                    )
-                                )
+                                .background(MaterialTheme.colorScheme.primary)
                                 .border(
                                     1.dp,
-                                    Brush.linearGradient(
-                                        listOf(Color.White.copy(0.7f), Color.White.copy(0.2f))
-                                    ),
+                                    Color.White.copy(alpha = if (isDark) 0.30f else 0.50f),
                                     RoundedCornerShape(20.dp)
                                 )
                         } else {
                             Modifier.liquidGlass(
                                 shape = RoundedCornerShape(20.dp),
-                                glowColor = MaterialTheme.colorScheme.surfaceVariant,
-                                borderAlpha = 0.25f,
-                                surfaceAlpha = 0.1f
+                                glowColor = MaterialTheme.colorScheme.surfaceVariant
                             )
                         }
                     )

@@ -346,14 +346,7 @@ fun SingleChoicePcGameItem(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .clip(CircleShape)
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.tertiary
-                                )
-                            )
-                        )
+                        .background(MaterialTheme.colorScheme.primary)
                         .padding(6.dp),
                     enter = fadeIn() + expandIn(expandFrom = Alignment.Center),
                     exit = shrinkOut(shrinkTowards = Alignment.Center) + fadeOut()
