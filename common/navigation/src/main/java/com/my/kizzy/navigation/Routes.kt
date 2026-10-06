@@ -22,6 +22,7 @@ class Routes {
 
         /* Profile Screen*/
         const val PROFILE = "profile"
+        const val BADGE_SPOOFER = "badge_spoofer"
 
         /* Rpc Screens */
         const val APPS_DETECTION = "apps_rpc"

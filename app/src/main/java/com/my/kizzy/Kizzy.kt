@@ -58,7 +58,8 @@ import com.my.kizzy.preference.Prefs
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.my.kizzy.feature_console_rpc.pc.PcGamesScreen
 import com.my.kizzy.feature_console_rpc.pc.PcGamesViewModel
-import com.my.kizzy.ui.components.InstagramSliderNavBar
+import com.my.kizzy.feature_profile.ui.spoofer.BadgeSpooferScreen
+import com.my.kizzy.ui.components.IosLiquidGlassSliderNavBar
 import xyz.dead8309.feature_experimental_rpc.ExperimentalRpcScreen
 import xyz.dead8309.feature_experimental_rpc.ExperimentalRpcViewmodel
 import xyz.dead8309.feature_experimental_rpc.apps.ExperimentalRpcAppsScreen
@@ -85,7 +86,7 @@ internal fun ComponentActivity.Kizzy(
     Scaffold(
         bottomBar = {
             if (selectedTab >= 0) {
-                InstagramSliderNavBar(
+                IosLiquidGlassSliderNavBar(
                     selectedIndex = selectedTab,
                     onItemSelected = { index ->
                         val target = when (index) {
@@ -213,7 +214,10 @@ internal fun ComponentActivity.Kizzy(
                     val viewModel by viewModels<UserViewModel>()
                     UserScreen(
                         state = viewModel.state.value,
-                        onBackPressed = navController::popBackStack
+                        onBackPressed = navController::popBackStack,
+                        onNavigateToBadgeSpoofer = {
+                            navController.navigate(Routes.BADGE_SPOOFER)
+                        }
                     )
                 } else {
                     LoginScreen(
@@ -223,6 +227,11 @@ internal fun ComponentActivity.Kizzy(
                         },
                     )
                 }
+            }
+            animatedComposable(Routes.BADGE_SPOOFER) {
+                BadgeSpooferScreen(
+                    onBackPressed = { navController.popBackStack() }
+                )
             }
             animatedComposable(Routes.CONSOLE_RPC) {
                 val viewModel by viewModels<GamesViewModel>()

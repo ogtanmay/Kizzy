@@ -172,98 +172,123 @@ data class NavSliderItem(
 )
 
 /**
- * Instagram Slider Nav Bar with an animated sliding pill indicator
- * and liquid glass dock floating above navigation bar insets.
+ * iOS 27 Liquid Glass Slider Nav Bar with an animated fluid glass sliding pill indicator,
+ * chromatic specular highlights, and floating translucent dock.
  */
 @Composable
-fun InstagramSliderNavBar(
+fun IosLiquidGlassSliderNavBar(
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
     items: List<NavSliderItem> = defaultNavItems()
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.let {
+        it.red * 0.299f + it.green * 0.587f + it.blue * 0.114f < 0.5f
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 14.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Floating liquid glass dock container
+        // Floating iOS 27 Liquid Glass Dock Container
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(68.dp)
+                .height(70.dp)
                 .liquidGlass(
-                    shape = RoundedCornerShape(34.dp),
+                    shape = RoundedCornerShape(35.dp),
                     glowColor = MaterialTheme.colorScheme.primary,
-                    borderAlpha = 0.4f,
-                    surfaceAlpha = 0.2f
+                    borderAlpha = if (isDark) 0.45f else 0.65f,
+                    surfaceAlpha = if (isDark) 0.22f else 0.35f
                 )
+                .drawBehind {
+                    // Top specular rim light reflection (iOS 27 glass refraction)
+                    drawRoundRect(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = if (isDark) 0.40f else 0.70f),
+                                Color.White.copy(alpha = 0.05f),
+                                Color.Transparent
+                            ),
+                            startY = 0f,
+                            endY = size.height * 0.45f
+                        ),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(35.dp.toPx(), 35.dp.toPx())
+                    )
+                }
                 .padding(horizontal = 6.dp, vertical = 6.dp)
         ) {
             val totalWidth = maxWidth
             val itemCount = items.size.coerceAtLeast(1)
             val tabWidth = totalWidth / itemCount
 
-            // Smooth sliding pill indicator
+            // Ultra-smooth spring-based liquid sliding pill indicator
             val indicatorOffset by animateDpAsState(
                 targetValue = tabWidth * selectedIndex,
                 animationSpec = spring(
                     dampingRatio = 0.72f,
                     stiffness = Spring.StiffnessMediumLow
                 ),
-                label = "instagram_nav_indicator_offset"
+                label = "ios27_slider_offset"
             )
 
-            // The sliding indicator capsule
+            // The Liquid Glass Sliding Capsule Pill
             Box(
                 modifier = Modifier
                     .offset(x = indicatorOffset)
                     .width(tabWidth)
-                    .height(56.dp)
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
-                    .clip(RoundedCornerShape(28.dp))
+                    .height(58.dp)
+                    .padding(horizontal = 3.dp, vertical = 2.dp)
+                    .clip(RoundedCornerShape(29.dp))
                     .background(
                         Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.88f),
-                                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.75f)
-                            )
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.90f),
+                                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.78f),
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
+                            ),
+                            start = Offset(0f, 0f),
+                            end = Offset(200f, 200f)
                         )
                     )
                     .border(
-                        1.dp,
-                        Brush.linearGradient(
+                        1.2.dp,
+                        Brush.verticalGradient(
                             listOf(
-                                Color.White.copy(alpha = 0.6f),
-                                Color.White.copy(alpha = 0.1f)
+                                Color.White.copy(alpha = 0.80f),
+                                Color.White.copy(alpha = 0.15f)
                             )
                         ),
-                        RoundedCornerShape(28.dp)
+                        RoundedCornerShape(29.dp)
                     )
             )
 
-            // Items Row
+            // Navigation Items Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(58.dp),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 items.forEachIndexed { index, item ->
                     val isSelected = selectedIndex == index
                     val iconScale by animateFloatAsState(
-                        targetValue = if (isSelected) 1.15f else 1.0f,
-                        animationSpec = spring(dampingRatio = 0.6f),
-                        label = "icon_scale"
+                        targetValue = if (isSelected) 1.18f else 1.0f,
+                        animationSpec = spring(
+                            dampingRatio = 0.65f,
+                            stiffness = Spring.StiffnessMediumLow
+                        ),
+                        label = "ios27_icon_scale"
                     )
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(56.dp)
+                            .height(58.dp)
                             .testTag(item.testTag)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
@@ -280,7 +305,7 @@ fun InstagramSliderNavBar(
                             Icon(
                                 imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
                                 contentDescription = item.title,
-                                tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
                                 modifier = Modifier
                                     .size(24.dp)
                                     .scale(iconScale)
@@ -292,7 +317,7 @@ fun InstagramSliderNavBar(
                                     fontSize = 10.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                 ),
-                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
                             )
                         }
                     }
@@ -300,6 +325,24 @@ fun InstagramSliderNavBar(
             }
         }
     }
+}
+
+/**
+ * Backward compatibility alias for InstagramSliderNavBar -> IosLiquidGlassSliderNavBar
+ */
+@Composable
+fun InstagramSliderNavBar(
+    selectedIndex: Int,
+    onItemSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    items: List<NavSliderItem> = defaultNavItems()
+) {
+    IosLiquidGlassSliderNavBar(
+        selectedIndex = selectedIndex,
+        onItemSelected = onItemSelected,
+        modifier = modifier,
+        items = items
+    )
 }
 
 /**

@@ -12,7 +12,13 @@ android {
 dependencies {
     implementation (projects.theme)
     implementation (projects.gateway)
+    implementation (projects.common.preference)
+    implementation (projects.common.components)
+    implementation (projects.common.resources)
     implementation (libs.coil)
     implementation (libs.activity.compose)
+    implementation (libs.material.icons.extended)
     implementation (libs.kotlinx.serialization.json)
+    implementation (libs.bundles.network.ktor)
+    implementation (libs.ktor.content.negotiation)
 }

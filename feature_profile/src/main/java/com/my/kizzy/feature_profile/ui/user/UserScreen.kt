@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Verified
 import com.my.kizzy.domain.model.user.User
 import com.my.kizzy.feature_profile.ui.component.Logout
 import com.my.kizzy.feature_profile.ui.component.ProfileCard
@@ -35,7 +37,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun UserScreen(
     state: UserState,
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
+    onNavigateToBadgeSpoofer: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -46,8 +49,19 @@ fun UserScreen(
         modifier = Modifier
             .fillMaxSize(),
         topBar = {
-            TopAppBar(title = { },
-                navigationIcon = { BackButton { onBackPressed() } })
+            TopAppBar(
+                title = { },
+                navigationIcon = { BackButton { onBackPressed() } },
+                actions = {
+                    IconButton(onClick = onNavigateToBadgeSpoofer) {
+                        Icon(
+                            Icons.Default.Verified,
+                            contentDescription = "Badge Spoofer",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            )
         }
     ) { paddingValues ->
         Box(

@@ -37,8 +37,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -241,13 +243,6 @@ fun PcGamesScreen(
                             }
                         }
 
-                        // Instagram-style Platform Filter Slider
-                        LiquidGlassCategorySlider(
-                            categories = PcGamesProvider.platforms,
-                            selectedCategory = state.selectedCategory,
-                            onCategorySelected = { onEvent(PcUiEvent.SelectCategory(it)) }
-                        )
-
                         // Games List with Liquid Glass Cards
                         LazyColumn(
                             modifier = Modifier
@@ -263,12 +258,15 @@ fun PcGamesScreen(
                                     selected = game.game_title
                                     val string = Json.encodeToString(
                                         RpcConfig(
-                                            name = info.platform,
-                                            details = info.game_title,
+                                            name = info.game_title,
+                                            details = "",
+                                            state = "",
                                             timestampsStart = System.currentTimeMillis().toString(),
                                             status = "dnd",
                                             largeImg = info.large_image ?: "",
-                                            smallImg = info.small_image,
+                                            largeText = info.game_title,
+                                            smallImg = "",
+                                            smallText = "",
                                             type = "0",
                                         )
                                     )
@@ -386,41 +384,24 @@ fun SingleChoicePcGameItem(
                     else MaterialTheme.colorScheme.onSurface,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                // Platform tag pill
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(
-                            if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(
+                        imageVector = if (selected) Icons.Filled.PlayArrow else Icons.Outlined.Timer,
+                        contentDescription = "Time Elapsed",
+                        tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = game.platform,
+                        text = if (selected) "Playing • Time Elapsed Active" else "Time Elapsed • Ready",
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                        color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Platform Logo
-            AsyncImage(
-                model = game.small_image,
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .border(
-                        1.dp,
-                        Color.White.copy(alpha = 0.3f),
-                        CircleShape
-                    ),
-                contentDescription = game.platform
-            )
         }
     }
 }
@@ -428,27 +409,13 @@ fun SingleChoicePcGameItem(
 /**
  * Dialog to add a custom PC game.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCustomPcGameDialog(
     onDismiss: () -> Unit,
     onAdd: (title: String, platform: String, image: String) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
-    var selectedPlatform by remember { mutableStateOf(Constants.STEAM) }
     var imageUrl by remember { mutableStateOf("") }
-    var expanded by remember { mutableStateOf(false) }
-
-    val platformOptions = listOf(
-        Constants.STEAM,
-        Constants.EPIC_GAMES,
-        Constants.RIOT_GAMES,
-        Constants.BATTLENET,
-        Constants.EA_APP,
-        Constants.UBISOFT,
-        Constants.GOG_GALAXY,
-        Constants.XBOX_PC
-    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -471,37 +438,6 @@ fun AddCustomPcGameDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Platform Dropdown
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it }
-                ) {
-                    OutlinedTextField(
-                        value = selectedPlatform,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(id = R.string.pc_game_platform)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        platformOptions.forEach { platform ->
-                            DropdownMenuItem(
-                                text = { Text(platform) },
-                                onClick = {
-                                    selectedPlatform = platform
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
                 OutlinedTextField(
                     value = imageUrl,
                     onValueChange = { imageUrl = it },
@@ -515,7 +451,7 @@ fun AddCustomPcGameDialog(
             Button(
                 onClick = {
                     if (title.isNotBlank()) {
-                        onAdd(title.trim(), selectedPlatform, imageUrl.trim())
+                        onAdd(title.trim(), "PC", imageUrl.trim())
                     }
                 },
                 enabled = title.isNotBlank()
